@@ -1,0 +1,143 @@
+#include<GL/glut.h>
+#include<stdlib.h>
+#include<stdio.h>
+#include<math.h>
+
+void dda_dotted(float X1, float Y1, float X2, float Y2)
+{
+double dx = (X2 - X1);
+double dy = (Y2 - Y1);
+double steps;
+float xInc, yInc, x = X1, y = Y1;
+steps = (abs(dx) > abs(dy)) ? (abs(dx)) : (abs(dy));
+xInc = dx / (float)steps;
+yInc = dy / (float)steps;
+glBegin(GL_POINTS);
+glVertex2d(x, y);
+int dot_counter = 0;
+for (int k = 0; k < steps; k++)
+{
+x += xInc;
+y += yInc;
+if(dot_counter % 10 == 00){
+glVertex2d(x, y);
+}
+dot_counter++;
+}
+glEnd();
+}
+void dda(float X1, float Y1, float X2, float Y2)
+{
+double dx = (X2 - X1);
+double dy = (Y2 - Y1);
+double steps;
+float xInc, yInc, x = X1, y = Y1;
+steps = (abs(dx) > abs(dy)) ? (abs(dx)) : (abs(dy));
+xInc = dx / (float)steps;
+yInc = dy / (float)steps;
+
+glBegin(GL_POINTS);
+glVertex2d(x, y);
+for (int k = 0; k < steps; k++)
+{
+x += xInc;
+y += yInc;
+glVertex2d(x, y);
+}
+glEnd();
+}
+void dda_dashDot(float X1, float Y1, float X2, float Y2){
+double dx = (X2 - X1);
+double dy = (Y2 - Y1);
+double steps;
+float xInc, yInc, x = X1, y = Y1;
+steps = (abs(dx) > abs(dy)) ? (abs(dx)) : (abs(dy));
+xInc = dx / (float)steps;
+yInc = dy / (float)steps;
+glBegin(GL_POINTS);
+glVertex2d(x, y);
+bool dash_fill = 0;
+for (int k = 0; k < steps; k++)
+{
+x += xInc;
+y += yInc;
+if(k % 50 == 30 || k % 50 == 0){
+continue;
+}else if(k % 10 == 0){
+glVertex2d(x, y);
+}
+if(k % 50 < 30){
+glVertex2d(x, y);
+}
+
+}
+glEnd();
+}
+
+void DDA(float X1, float Y1, float X2, float Y2, int choice){
+if(choice == 0)
+dda(X1, Y1, X2, Y2);
+else if(choice == 1)
+dda_dotted(X1, Y1, X2, Y2);
+else if(choice == 2)
+dda_dashDot(X1, Y1, X2, Y2);
+}
+int line_coords[4];
+int i = 0;
+void mouse_func(int button, int state, int x, int y) {
+if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && i < 4) {
+line_coords[i++] = x - 500;
+line_coords[i++] = -y;
+}
+if (i == 4) {
+glColor3f(0.5, 1.0, 0.0);
+// Draw the line based on the collected coordinates
+DDA(line_coords[0], line_coords[1], line_coords[2], line_coords[3], 0);
+glutSwapBuffers();
+i = 0;
+}
+}
+void render()
+{
+glClearColor(0.0, 0.0, 0.0, 0.0);
+glPointSize(3.0);
+glClear(GL_COLOR_BUFFER_BIT);
+glMatrixMode(GL_PROJECTION);
+glLoadIdentity();
+gluOrtho2D(-500, 500, -500, 500);
+glPointSize(2.0);
+glColor3f(0.5, 1.0, 0.0);
+DDA(-500, 0, 500, 0, 0); // horizontal line
+DDA(0, -500, 0, 500, 0); // vertical line
+// 1st quadrant
+DDA(200, 0, 200, 200, 1);
+DDA(200, 200, 0, 200, 1);
+DDA(200, 0, 0, 200, 2);
+
+// 2nd quadrant
+DDA(-200, 0, -200, 200, 1);
+DDA(-200, 200, 0, 200, 1);
+DDA(-200, 0, 0, 200, 2);
+// 3rd quadrant
+DDA(-200, 0, -200, -200, 1);
+DDA(-200, -200, 0, -200, 1);
+DDA(-200, 0, 0, -200, 2);
+// 4th quadrant
+DDA(200, 0, 200, -200, 1);
+DDA(200, -200, 0, -200, 1);
+DDA(200, 0, 0, -200, 2);
+glFlush();
+}
+
+int main(int argc, char **argv)
+{
+glutInit(&argc, argv);
+glutInitDisplayMode(GLUT_SINGLE);
+glutInitWindowSize(700, 400);
+glutInitWindowPosition(100, 100);
+glutCreateWindow("DDA line drawing algorithm");
+glutDisplayFunc(render);
+glutMouseFunc(mouse_func);
+glutMainLoop();
+return 0;
+}
